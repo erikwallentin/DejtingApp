@@ -9,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Group11.Models;
+using System.Data.Entity;
 
 namespace Group11.Controllers
 {
@@ -56,7 +57,11 @@ namespace Group11.Controllers
         // GET: /Account/UserProfile
         public ActionResult UserProfile()
         {
-            return View();
+
+            var userId = User.Identity.GetUserId();
+            var db = new ApplicationDbContext();
+            var model = db.Users.Where(x => x.Id == userId);
+            return View(model);
         }
 
         //
@@ -146,7 +151,103 @@ namespace Group11.Controllers
             return RedirectToAction("Startpage", "Home");
         }
 
-        
+        //
+        // GET: /Account/ChangeUserData
+
+        public ActionResult ChangeUserData()
+        {
+            var db = new ApplicationDbContext();
+            string userId = User.Identity.GetUserId();
+
+            ApplicationUser user = db.Users.FirstOrDefault(u => u.Id.Equals(userId));
+
+            ChangeUserDataViewModel model = new ChangeUserDataViewModel();
+            model.Email = user.UserName;
+            model.Nickname = user.Nickname;
+            model.Information = user.Information;
+
+            return View(model);
+
+        }
+
+        //
+        // POST: /Account/ChangeUserData
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChangeUserData(ChangeUserDataViewModel userprofile)
+        {
+            if (ModelState.IsValid)
+            {
+                var db = new ApplicationDbContext();
+                string userId = User.Identity.GetUserId();
+
+                ApplicationUser user = db.Users.FirstOrDefault(u => u.Id.Equals(userId));
+
+                user.UserName = userprofile.Email;
+                user.Email = user.UserName;
+                user.Nickname = userprofile.Nickname;
+                user.Information = userprofile.Information;
+
+                db.Entry(user).State = EntityState.Modified;
+                db.SaveChanges();
+
+                return RedirectToAction("UserProfile", "Account");
+
+            }
+            return View(userprofile);
+
+        }
+
+        //
+        // GET: /Account/ChangePassword
+        public ActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        //
+        // POST: /Account/ChangePassword
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+            var result = await UserManager.ChangePasswordAsync(User.Identity.GetUserId(), model.OldPassword, model.NewPassword);
+            if (result.Succeeded)
+            {
+                var user = await UserManager.FindByIdAsync(User.Identity.GetUserId());
+                if (user != null)
+                {
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
+                }
+                return RedirectToAction("UserProfile");
+            }
+            TempData["PasswordChangeFailMSG"] = "<script>alert('The password you entered does not match your old one. Please try again');</script>";
+            //AddErrors(result);
+            return View(model);
+        }
+
+        // A method that makes the users nickname display on the navbar when logged in
+
+        protected override void OnActionExecuted(ActionExecutedContext filterContext)
+        {
+            if (User != null)
+            {
+                var context = new ApplicationDbContext();
+                var userId = User.Identity.GetUserId();
+
+                if (!string.IsNullOrEmpty(userId))
+                {
+                    var user = context.Users.SingleOrDefault(u => u.Id == userId);
+                    string Nick = user.Nickname;
+                    ViewData.Add("Nick", Nick);
+                }
+            }
+            base.OnActionExecuted(filterContext);
+        }
 
         protected override void Dispose(bool disposing)
         {

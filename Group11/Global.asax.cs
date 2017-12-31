@@ -10,17 +10,22 @@ using System.Web.Routing;
 
 namespace Group11
 {
-    public class MvcApplication : System.Web.HttpApplication
+    public class MvcApplication : HttpApplication
     {
-        protected void Application_Start()
+        protected void Application_Start(object sender, EventArgs e)
         {
             Database.SetInitializer(
                    new DropCreateDatabaseIfModelChanges<ApplicationDbContext>());
+
+
 
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
+
+        
+
     }
 }

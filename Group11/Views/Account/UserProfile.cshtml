@@ -1,8 +1,25 @@
-﻿
-@{
+﻿@model IEnumerable<Group11.Models.ApplicationUser>
+    @{ 
     ViewBag.Title = "Profile";
 }
 
-<h2>Detta är den inloggades personliga sida som bara nås om man är inloggad</h2>
+<h4>Detta är den inloggades personliga sida som bara nås om man är inloggad</h4>
 <p>Här ska det fyllas på med information, bilder, lista på vänner m.m.</p>
+
+<h3>Information about the user</h3>
+
+@foreach (var item in Model)
+{
+
+    @item.Information
+
+   
+}
+
+
+
+
+
+
+
 
