@@ -10,6 +10,7 @@ using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Group11.Models;
 using System.Data.Entity;
+using System.IO;
 
 namespace Group11.Controllers
 {
@@ -116,31 +117,64 @@ namespace Group11.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Register(RegisterViewModel model)
+        public async Task<ActionResult> Register([Bind(Exclude = "UserPhoto")]RegisterViewModel model)
         {
+
             if (ModelState.IsValid)
             {
+                // To convert the user uploaded Photo as Byte Array before save to DB
+                byte[] imageData = null;
+                if (Request.Files.Count > 0)
+                {
+                    HttpPostedFileBase poImgFile = Request.Files["UserPhoto"];
+
+                    using (var binary = new BinaryReader(poImgFile.InputStream))
+                    {
+                        imageData = binary.ReadBytes(poImgFile.ContentLength);
+                    }
+                }
+
                 var user = new ApplicationUser { UserName = model.Email, Email = model.Email, Nickname = model.Nickname, Information = model.Information };
+                //Here we pass the byte array to user context to store in db
+                user.UserPhoto = imageData;
+
+                bool hasAllZeroes = imageData.All(singleByte => singleByte == 0);
+
+
+
+                if (hasAllZeroes == true)
+                {
+                    TempData["ImageFailMSG"] = "<script>alert('Please choose a profile picture');</script>";
+                    return View(model);
+                }
+
+
                 var result = await UserManager.CreateAsync(user, model.Password);
+
+
+
+
                 if (result.Succeeded)
                 {
-                    await SignInManager.SignInAsync(user, isPersistent:false, rememberBrowser:false);
+                    await SignInManager.SignInAsync(user, isPersistent: false, rememberBrowser: false);
 
                     // For more information on how to enable account confirmation and password reset please visit https://go.microsoft.com/fwlink/?LinkID=320771
                     // Send an email with this link
                     // string code = await UserManager.GenerateEmailConfirmationTokenAsync(user.Id);
                     // var callbackUrl = Url.Action("ConfirmEmail", "Account", new { userId = user.Id, code = code }, protocol: Request.Url.Scheme);
                     // await UserManager.SendEmailAsync(user.Id, "Confirm your account", "Please confirm your account by clicking <a href=\"" + callbackUrl + "\">here</a>");
-                    
+
                     return RedirectToAction("UserProfile", "Account");
                 }
+
                 AddErrors(result);
             }
 
             // If we got this far, something failed, redisplay form
+
             return View(model);
         }
-        
+
         //
         // POST: /Account/LogOff
         [HttpPost]
@@ -199,6 +233,64 @@ namespace Group11.Controllers
         }
 
         //
+        // GET: /Account/EditProfilePicture
+        public ActionResult EditProfilePicture()
+        {
+            return View();
+        }
+
+        //
+        // POST: /Account/EditProfilePicture
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult EditProfilePicture([Bind(Exclude = "UserPhoto")]EditProfilePictureViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // To convert the user uploaded Photo as Byte Array before save to DB
+                byte[] imageData = null;
+                if (Request.Files.Count > 0)
+                {
+                    HttpPostedFileBase poImgFile = Request.Files["UserPhoto"];
+
+                    using (var binary = new BinaryReader(poImgFile.InputStream))
+                    {
+                        imageData = binary.ReadBytes(poImgFile.ContentLength);
+                    }
+                }
+
+                var db = new ApplicationDbContext();
+                string userId = User.Identity.GetUserId();
+
+                ApplicationUser user = db.Users.FirstOrDefault(u => u.Id.Equals(userId));
+                //Here we pass the byte array to user context to store in db
+                user.UserPhoto = imageData;
+
+                bool hasAllZeroes = imageData.All(singleByte => singleByte == 0);
+
+
+
+                if (hasAllZeroes == true)
+                {
+                    TempData["ImageFailMSG"] = "<script>alert('Please choose a profile picture');</script>";
+                    return View(model);
+                }
+                else
+
+                user.UserPhoto = imageData;
+                db.Entry(user).State = EntityState.Modified;
+                db.SaveChanges();
+                return RedirectToAction("UserProfile", "Account");
+
+
+            }
+
+            // If we got this far, something failed, redisplay form
+
+            return View(model);
+        }
+
+        //
         // GET: /Account/ChangePassword
         public ActionResult ChangePassword()
         {
@@ -228,6 +320,47 @@ namespace Group11.Controllers
             TempData["PasswordChangeFailMSG"] = "<script>alert('The password you entered does not match your old one. Please try again');</script>";
             //AddErrors(result);
             return View(model);
+        }
+
+        public FileContentResult UserPhotos()
+        {
+            if (User.Identity.IsAuthenticated)
+            {
+                String userId = User.Identity.GetUserId();
+
+                if (userId == null)
+                {
+                    string fileName = HttpContext.Server.MapPath(@"~/Images/noImg.png");
+
+                    byte[] imageData = null;
+                    FileInfo fileInfo = new FileInfo(fileName);
+                    long imageFileLength = fileInfo.Length;
+                    FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+                    BinaryReader br = new BinaryReader(fs);
+                    imageData = br.ReadBytes((int)imageFileLength);
+
+                    return File(imageData, "image/png");
+
+                }
+                // to get the user details to load user Image
+                var bdUsers = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
+                var userImage = bdUsers.Users.Where(x => x.Id == userId).FirstOrDefault();
+
+                return new FileContentResult(userImage.UserPhoto, "image/jpeg");
+            }
+            else
+            {
+                string fileName = HttpContext.Server.MapPath(@"~/Images/noImg.png");
+
+                byte[] imageData = null;
+                FileInfo fileInfo = new FileInfo(fileName);
+                long imageFileLength = fileInfo.Length;
+                FileStream fs = new FileStream(fileName, FileMode.Open, FileAccess.Read);
+                BinaryReader br = new BinaryReader(fs);
+                imageData = br.ReadBytes((int)imageFileLength);
+                return File(imageData, "image/png");
+
+            }
         }
 
         // A method that makes the users nickname display on the navbar when logged in

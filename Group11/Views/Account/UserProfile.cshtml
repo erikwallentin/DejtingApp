@@ -3,20 +3,25 @@
     ViewBag.Title = "Profile";
 }
 
-<h4>Detta är den inloggades personliga sida som bara nås om man är inloggad</h4>
-<p>Här ska det fyllas på med information, bilder, lista på vänner m.m.</p>
+<h3>Profile page</h3>
 
-<h3>Information about the user</h3>
-
-@foreach (var item in Model)
-{
-
-    @item.Information
-
-   
-}
+<div>
 
 
+    <img src="@Url.Action("UserPhotos", "Account" )" style="width:200px;height:200px; background: #FFFFFF;
+    margin: auto;
+    padding: 6px;" />
+</div>
+@Html.ActionLink("Edit profile picture", "EditProfilePicture", "Account")
+<div>
+    @foreach (var item in Model)
+    {
+
+        @item.Information
+
+
+    }
+</div>
 
 
 

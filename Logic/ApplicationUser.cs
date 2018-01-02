@@ -14,6 +14,8 @@ namespace Group11.Models
         public string Nickname { get; set; }
 
         public string Information { get; set; }
+       
+        public byte[] UserPhoto { get; set; }
 
         public virtual ICollection<Messages> Messages { get; set; }
        

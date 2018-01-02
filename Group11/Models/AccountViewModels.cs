@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Group11.Internationalization;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Group11.Models
@@ -84,22 +85,34 @@ namespace Group11.Models
         [Required(ErrorMessage = "Please write something about yourself")]
         [RegularExpression(@"^(?![\s]).+[A-Za-zåäöÅÄÖ0-9]*[A-Za-zåäöÅÄÖ0-9 ]*[A-Za-zåäöÅÄÖ0-9.]+(?![\s])$", ErrorMessage = "Please start your text with a letter or a number and end the text with a letter, number or a dot. Don't use line breaks")]
         public string Information { get; set; }
+
+        [Display(Name = "Profile picture")]
+        public byte[] UserPhoto { get; set; }
     }
 
     public class ChangeUserDataViewModel
     {
-
-        [Required(ErrorMessage = "Please enter a email-adress")]
-        [EmailAddress(ErrorMessage = "Please use the correct email format")]
+        [Display(ResourceType = typeof(AppResources), Name = nameof(AppResources.TitelEmail))]
+        [Required(ErrorMessageResourceType = typeof(AppResources), ErrorMessageResourceName = nameof(AppResources.ValMessageEmptyEmail))]
+        [EmailAddress(ErrorMessageResourceType = typeof(AppResources), ErrorMessageResourceName = nameof(AppResources.ValMessageEmail))]
         public string Email { get; set; }
 
-        [Required(ErrorMessage = "Please choose a nickname")]
-        [RegularExpression(@"[A-Za-zåäöÅÄÖ0-9]{3,50}", ErrorMessage = "Please enter a nickname that's between 3 to 50 letter and/or numbers without spaces")]
+        [Display(ResourceType = typeof(AppResources), Name = nameof(AppResources.TitelNickname))]
+        [Required(ErrorMessageResourceType = typeof(AppResources), ErrorMessageResourceName = nameof(AppResources.ValMessageEmptyNickname))]
+        [RegularExpression(@"[A-Za-zåäöÅÄÖ0-9]{3,50}", ErrorMessageResourceType = typeof(AppResources), ErrorMessageResourceName = nameof(AppResources.ValMessageNickname))]
         public string Nickname { get; set; }
 
-        [Required(ErrorMessage = "Please write something about yourself")]
-        [RegularExpression(@"^(?![\s]).+[A-Za-zåäöÅÄÖ0-9]*[A-Za-zåäöÅÄÖ0-9 ]*[A-Za-zåäöÅÄÖ0-9.]+(?![\s])$", ErrorMessage = "Please start your text with a letter or a number and end the text with a letter, number or a dot. Don't use line breaks")]
+        [Display(ResourceType = typeof(AppResources), Name = nameof(AppResources.TitelInformation))]
+        [Required(ErrorMessageResourceType = typeof(AppResources), ErrorMessageResourceName = nameof(AppResources.ValMessageEmptyInformation))]
+        [RegularExpression(@"^(?![\s]).+[A-Za-zåäöÅÄÖ0-9]*[A-Za-zåäöÅÄÖ0-9 ]*[A-Za-zåäöÅÄÖ0-9.]+(?![\s])$", ErrorMessageResourceType = typeof(AppResources), ErrorMessageResourceName = nameof(AppResources.ValMessageInformation))]
         public string Information { get; set; }
+
+    }
+
+    public class EditProfilePictureViewModel
+    {
+        [Display(Name = "Profile picture")]
+        public byte[] UserPhoto { get; set; }
     }
 
     public class ResetPasswordViewModel
