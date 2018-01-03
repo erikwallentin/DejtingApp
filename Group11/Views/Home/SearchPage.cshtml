@@ -20,7 +20,7 @@
     {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Nickname)
+                @Html.ActionLink(Html.DisplayFor(modelItem => item.Nickname).ToString(), "UserProfile", "Account")
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Information)

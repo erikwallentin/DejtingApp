@@ -15,6 +15,7 @@ namespace Group11.Controllers
         {
             return View();
         }
+        [Authorize]
         public ActionResult SearchPage(string searchString)
         {
            
@@ -29,6 +30,7 @@ namespace Group11.Controllers
 
             return View(users);
         }
-        
+
+
     }
 }
