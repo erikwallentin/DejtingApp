@@ -18,6 +18,7 @@ namespace Group11.Models
 
        
         public DbSet<Messages> Messages { get; set; }
-        
+
+        //public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     }
 }

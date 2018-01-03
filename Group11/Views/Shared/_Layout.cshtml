@@ -22,6 +22,15 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Profilepage", "UserProfile", "Account")</li>
+                    <li>
+                        <div class="search-bar">
+                        @using (Html.BeginForm("SearchPage", "Home", FormMethod.Get))
+                        {
+                            @Html.TextBox("SearchString")
+                            <input type="submit" value="Search" class="search-button" />
+                        } 
+                        </div>
+                    </li>
                     
                 </ul>
                 @Html.Partial("_LoginPartial")
