@@ -14,6 +14,8 @@ using System.IO;
 
 namespace Group11.Controllers
 {
+    
+
     [Authorize]
     public class AccountController : Controller
     {
@@ -56,14 +58,27 @@ namespace Group11.Controllers
 
         //
         // GET: /Account/UserProfile
-        public ActionResult UserProfile()
+        public ActionResult UserProfile(string id = null)
         {
 
-            var userId = User.Identity.GetUserId();
-            var db = new ApplicationDbContext();
-            var model = db.Users.Where(x => x.Id == userId);
-            return View(model);
+            if (id == null)
+            {
+                var userId = User.Identity.GetUserId();
+                var db = new ApplicationDbContext();
+                var model = db.Users.Where(x => x.Id == userId);
+                return View(model);
+            }
+            
+            else
+            {
+                var db = new ApplicationDbContext();
+                var model = db.Users.Where(x => x.Id == id);
+                return View(model);
+            }
         }
+
+
+
 
         //
         // GET: /Account/Login
@@ -322,7 +337,7 @@ namespace Group11.Controllers
             return View(model);
         }
 
-        public FileContentResult UserPhotos()
+        public FileContentResult UserPhotos(string id = null)
         {
             if (User.Identity.IsAuthenticated)
             {
@@ -343,10 +358,21 @@ namespace Group11.Controllers
 
                 }
                 // to get the user details to load user Image
-                var bdUsers = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
-                var userImage = bdUsers.Users.Where(x => x.Id == userId).FirstOrDefault();
 
-                return new FileContentResult(userImage.UserPhoto, "image/jpeg");
+                if (id == null)
+                {
+                    var bdUsers = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
+                    var userImage = bdUsers.Users.Where(x => x.Id == userId).FirstOrDefault();
+
+                    return new FileContentResult(userImage.UserPhoto, "image/jpeg");
+                }
+                else
+                {
+                    var bdUsers = HttpContext.GetOwinContext().Get<ApplicationDbContext>();
+                    var userImage = bdUsers.Users.Where(x => x.Id == id).FirstOrDefault();
+
+                    return new FileContentResult(userImage.UserPhoto, "image/jpeg");
+                }
             }
             else
             {
